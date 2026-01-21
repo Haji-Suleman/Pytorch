@@ -19,5 +19,7 @@
    * Getting data ready 
    * Building a model
      * From Scratch
-     
+3. PyTorch Neural Network classification
+
+
 
