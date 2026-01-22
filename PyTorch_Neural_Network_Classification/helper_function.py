@@ -84,7 +84,7 @@ def plot_predictions(
     Plots linear training data and test data and compares predictions.
     """
     plt.figure(figsize=(10, 7))
-    
+
     # Plot training data in blue
     plt.scatter(train_data, train_labels, c="b", s=4, label="Training data")
 
