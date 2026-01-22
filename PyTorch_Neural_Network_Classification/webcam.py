@@ -41,7 +41,7 @@ while True:
 
         # ------------------- Age/Gender approximation -------------------
         # Quick trick: face width
-        if w > 200:
+        if w > 150:
             age = "Adult"
         else:
             age = "Child"
