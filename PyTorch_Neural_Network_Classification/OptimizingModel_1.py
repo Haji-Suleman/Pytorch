@@ -91,3 +91,27 @@ for epoch in range(epochs):
         print(
             f"Epoch: {epoch} | Loss: {loss:.5f}, Acc: {acc:.2f} | Test loss: {test_loss:2f}"
         )
+
+import requests
+from pathlib import Path
+
+if Path("helper.py").is_file():
+    print("Helper function.py already exists")
+else:
+    print("Downloading helper function")
+    request = requests.get(
+        "https://raw.githubusercontent.com/mrdbourke/pytorch-deep-learning/refs/heads/main/helper_functions.py"
+    )
+    with open("helper.py", "wb") as f:
+        f.write(request.content)
+        f.close()
+from helper import plot_predictions, plot_decision_boundary
+
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+plt.title("Train")
+plot_decision_boundary(model_1, X_train, y_train)
+plt.subplot(1, 2, 2)
+plt.title("Test")
+plot_decision_boundary(model_1, X_test, y_test)
+plt.show()
