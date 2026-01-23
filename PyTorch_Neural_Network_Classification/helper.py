@@ -97,6 +97,7 @@ def plot_predictions(
 
     # Show the legend
     plt.legend(prop={"size": 14})
+    # plt.show()
 
 
 # Calculate accuracy (a classification metric)

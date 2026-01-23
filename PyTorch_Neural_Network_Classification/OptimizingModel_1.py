@@ -45,7 +45,6 @@ class CircleModelV1(nn.Module):
 
 
 model_1 = CircleModelV1().to(device=device)
-print(model_1.state_dict())
 
 
 loss_fn = nn.BCEWithLogitsLoss()
@@ -87,7 +86,7 @@ for epoch in range(epochs):
         test_pred = torch.round(torch.sigmoid(test_logits))
         test_loss = loss_fn(test_logits, y_test)
         test_acc = accuracy_fn(y_true=y_test, y_pred=test_pred)
-    if epoch % 100 == 0:
+    if epoch % 300 == 0:
         print(
             f"Epoch: {epoch} | Loss: {loss:.5f}, Acc: {acc:.2f} | Test loss: {test_loss:2f}"
         )
@@ -114,4 +113,87 @@ plot_decision_boundary(model_1, X_train, y_train)
 plt.subplot(1, 2, 2)
 plt.title("Test")
 plot_decision_boundary(model_1, X_test, y_test)
-plt.show()
+# plt.show()
+
+
+weight = 0.7
+bias = 0.3
+start = 0
+end = 1
+step = 0.01
+X_regression = torch.arange(start, end, step).unsqueeze(dim=1)
+y_regression = weight * X_regression**2 + bias
+
+
+print(len(X_regression))
+
+train_split = int(0.8 * len(X_regression))
+X_train_regression, y_train_regression = (
+    X_regression[:train_split],
+    y_regression[:train_split],
+)
+X_test_regression, y_test_regression = (
+    X_regression[train_split:],
+    y_regression[train_split:],
+)
+
+print(
+    len(X_train_regression),
+    len(y_train_regression),
+    len(X_test_regression),
+    len(y_test_regression),
+)
+
+plot_predictions(
+    train_data=X_train_regression,
+    train_labels=y_train_regression,
+    test_data=X_test_regression,
+    test_labels=y_test_regression,
+)
+
+
+model_2 = nn.Sequential(
+    nn.Linear(in_features=1, out_features=10),
+    nn.Linear(in_features=10, out_features=10),
+    nn.Linear(in_features=10, out_features=1),
+).to(device)
+
+
+loss_fn = nn.L1Loss()
+
+optimizer = torch.optim.SGD(params=model_2.parameters, lr=0.1)
+
+
+# Train
+
+
+torch.manual_seed(42)
+
+torch.cuda.manual_seed(42)
+
+
+epoch = 1000
+
+X_train_regression, y_train_regression, X_test_regression, y_test_regression = (
+    X_train_regression.to(device),
+    y_train_regression.to(device),
+    X_test_regression.to(device),
+    y_test_regression.to(device),
+)
+
+
+for epoch in range(epochs):
+    y_pred = model_2(X_train_regression)
+    loss = loss_fn(y_pred, y_train_regression)
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    model_2.eval()
+    with torch.inference_mode():
+        test_pred = model_2(X_test_regression)
+        test_loss = loss_fn(test_pred, y_test_regression)
+    if epoch % 200 == 0:
+        print(f"Epoch: {epoch} | Loss: {loss:.5f} | Test Loss: {test_loss} ")
+
+
+
