@@ -150,7 +150,7 @@ plot_predictions(
     test_data=X_test_regression,
     test_labels=y_test_regression,
 )
-plt.show()
+# plt.show()
 
 
 model_2 = nn.Sequential(
@@ -205,7 +205,7 @@ with torch.inference_mode():
         test_labels=y_test_regression,
         predictions=test_pred,
     )
-plt.show()
+# plt.show()
 
 
 import matplotlib.pyplot as plt
@@ -228,3 +228,49 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 
+class CircleModelV2(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layer_1 = nn.Linear(in_features=2, out_features=10)
+        self.layer_2 = nn.Linear(in_features=10, out_features=10)
+        self.layer_3 = nn.Linear(in_features=10, out_features=1)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        return self.layer_3(self.relu(self.layer_2(self.relu(self.layer_1(x)))))
+
+
+model_3 = CircleModelV2().to(device)
+
+print(model_3)
+
+
+loss_fn = nn.BCEWithLogitsLoss()
+
+optimizer = torch.optim.SGD(model_3.parameters(), lr=0.1)
+
+
+torch.manual_seed(42)
+torch.cuda.manual_seed(42)
+
+X_train, y_train, X_test, y_test = (
+    X_train.to(device),
+    y_train.to(device),
+    X_test.to(device),
+    y_test.to(device),
+)
+
+epochs = 1000
+
+for epoch in range(epochs):
+    model_3.train()
+    y_logits = model_3(X_train).squeeze()
+    y_pred = torch.round(torch.sigmoid(y_logits))
+
+
+    loss = loss_fn( y_logits,y_train)
+    acc =accuracy_fn(y_true=y_train,y_pred=y_pred)
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    model.eval()
