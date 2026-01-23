@@ -45,6 +45,10 @@ class CircleModelV0(nn.Module):
 
 
 model_0 = CircleModelV0().to(device)
+model_0 = nn.Sequential(
+    nn.Linear(in_features=2, out_features=126),
+    nn.Linear(in_features=126, out_features=1).to(device),
+)
 
 # 5️⃣ Loss and optimizer
 loss_fn = nn.BCEWithLogitsLoss()
@@ -122,4 +126,24 @@ plot_decision_boundary(model_0, X_train, y_train)
 plt.subplot(1, 2, 2)
 plt.title("Test")
 plot_decision_boundary(model_0, X_test, y_test)
-plt.show()
+# plt.show()
+
+
+class CircleModelV1(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layer_1 = nn.Linear(in_features=2, out_features=10)
+        self.layer_2 = nn.Linear(in_features=10, out_features=10)
+        self.layer_3 = nn.Linear(in_features=10, out_features=1)
+
+    def forward(self, X):
+        # <-
+        # z = self.layer_1(X)
+        # z = self.layer_2(X)
+        # z = self.layer_3(X)
+        # ->
+        return self.layer_3(self.layer_2(self.layer_1(X)))
+
+
+model_1 = CircleModelV1().to(device=device)
+print(model_1)
