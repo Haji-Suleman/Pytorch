@@ -146,4 +146,41 @@ class CircleModelV1(nn.Module):
 
 
 model_1 = CircleModelV1().to(device=device)
-print(model_1)
+print(model_1.state_dict())
+
+
+loss_fn = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.SGD(params=model_1.parameters(), lr=0.01)
+
+
+torch.manual_seed(42)
+torch.cuda.manual_seed(42)
+
+epochs = 1000
+
+X_train, y_train, X_test, y_test = (
+    X_train.to(device),
+    y_train.to(device),
+    X_test.to(device),
+    y_test.to(device),
+)
+
+for epoch in range(epochs):
+    model_1.train()
+    y_logits = model_1(X_train).squeeze()
+    y_pred = torch.round(torch.sigmoid(y_logits))
+    loss = loss_fn(y_logits, y_train)
+    acc = accuracy_fn(y_true=y_train, y_pred=y_pred)
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    model_1.eval()
+    with torch.inference_mode():
+        test_logits = model_1(X_train).squeeze()
+        test_pred = torch.round(torch.sigmoid(test_logits))
+        test_loss = loss_fn(test_logits, y_test)
+        test_acc = accuracy_fn(y_true=y_test, y_pred=test_pred)
+    if epoch % 100 == 0:
+        print(
+            f"Epoch: {epoch} | Loss: {loss:.5f}, Acc: {acc:.2f} | Test loss: {test_loss:2f}"
+        )
