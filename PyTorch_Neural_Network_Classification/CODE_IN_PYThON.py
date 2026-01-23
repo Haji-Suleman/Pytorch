@@ -114,3 +114,12 @@ else:
         f.write(request.content)
         f.close()
 from helper import plot_predictions, plot_decision_boundary
+
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+plt.title("Train")
+plot_decision_boundary(model_0, X_train, y_train)
+plt.subplot(1, 2, 2)
+plt.title("Test")
+plot_decision_boundary(model_0, X_test, y_test)
+plt.show()
