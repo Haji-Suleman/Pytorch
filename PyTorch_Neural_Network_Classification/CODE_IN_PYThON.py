@@ -19,7 +19,7 @@ print(f"First five labels of y:\n{y[:5]}")
 
 # Plot the data
 plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.RdYlBu)
-plt.show()
+# plt.show()
 
 # Convert to torch tensors
 X = torch.from_numpy(X).type(torch.float32)
@@ -99,3 +99,18 @@ with torch.inference_mode():
 
 print("\nSample Predictions:", sample_preds)
 print("True Labels:", y_test[:5])
+
+import requests
+from pathlib import Path
+
+if Path("helper.py").is_file():
+    print("Helper function.py already exists")
+else:
+    print("Downloading helper function")
+    request = requests.get(
+        "https://raw.githubusercontent.com/mrdbourke/pytorch-deep-learning/refs/heads/main/helper_functions.py"
+    )
+    with open("helper.py", "wb") as f:
+        f.write(request.content)
+        f.close()
+from helper import plot_predictions, plot_decision_boundary
