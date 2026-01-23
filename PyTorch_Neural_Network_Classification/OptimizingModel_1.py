@@ -122,7 +122,7 @@ start = 0
 end = 1
 step = 0.01
 X_regression = torch.arange(start, end, step).unsqueeze(dim=1)
-y_regression = weight * X_regression**2 + bias
+y_regression = weight * X_regression + bias
 
 
 print(len(X_regression))
@@ -150,6 +150,7 @@ plot_predictions(
     test_data=X_test_regression,
     test_labels=y_test_regression,
 )
+plt.show()
 
 
 model_2 = nn.Sequential(
@@ -161,7 +162,7 @@ model_2 = nn.Sequential(
 
 loss_fn = nn.L1Loss()
 
-optimizer = torch.optim.SGD(params=model_2.parameters, lr=0.1)
+optimizer = torch.optim.SGD(params=model_2.parameters(), lr=0.01)
 
 
 # Train
@@ -195,5 +196,35 @@ for epoch in range(epochs):
     if epoch % 200 == 0:
         print(f"Epoch: {epoch} | Loss: {loss:.5f} | Test Loss: {test_loss} ")
 
+model_2.eval()
+with torch.inference_mode():
+    plot_predictions(
+        train_data=X_train_regression,
+        train_labels=y_train_regression,
+        test_data=X_test_regression,
+        test_labels=y_test_regression,
+        predictions=test_pred,
+    )
+plt.show()
+
+
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_circles
+
+
+n_samples
+X, y = make_circles(n_samples, noise=0.03, random_state=42)
+plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.RdYlBu)
+
+
+from sklearn.model_selection import train_test_split
+
+X = torch.from_numpy(X).type(torch.float)
+y = torch.from_numpy(y).type(torch.float)
+
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
 
 
