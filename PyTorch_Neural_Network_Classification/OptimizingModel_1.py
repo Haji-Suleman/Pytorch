@@ -267,10 +267,18 @@ for epoch in range(epochs):
     y_logits = model_3(X_train).squeeze()
     y_pred = torch.round(torch.sigmoid(y_logits))
 
-
-    loss = loss_fn( y_logits,y_train)
-    acc =accuracy_fn(y_true=y_train,y_pred=y_pred)
+    loss = loss_fn(y_logits, y_train)
+    acc = accuracy_fn(y_true=y_train, y_pred=y_pred)
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-    model.eval()
+    model_3.eval()
+    with torch.inference_mode():
+        test_logits = model_3(X_test).squeeze()
+        test_pred = torch.round(torch.sigmoid(test_logits))
+        test_loss = loss_fn(test_logits, y_test)
+        test_acc = accuracy_fn(y_true=y_test, y_pred=test_pred)
+    if epoch % 100 == 0:
+        print(
+            f"Epoch: {epoch} | Loss: {loss:.4f}, Acc: {acc:.2f} | Test Loss: {test_loss:.4f}"
+        )
