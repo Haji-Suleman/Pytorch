@@ -113,7 +113,10 @@ plot_decision_boundary(model_1, X_train, y_train)
 plt.subplot(1, 2, 2)
 plt.title("Test")
 plot_decision_boundary(model_1, X_test, y_test)
-# plt.show()
+plt.savefig(
+    "./PyTorch_Neural_Network_Classification/images/train_decision_boundary.png"
+)
+plt.show()
 
 
 weight = 0.7
@@ -150,6 +153,7 @@ plot_predictions(
     test_data=X_test_regression,
     test_labels=y_test_regression,
 )
+
 # plt.show()
 
 
@@ -205,6 +209,8 @@ with torch.inference_mode():
         test_labels=y_test_regression,
         predictions=test_pred,
     )
+
+
 # plt.show()
 
 
@@ -247,7 +253,7 @@ print(model_3)
 
 loss_fn = nn.BCEWithLogitsLoss()
 
-optimizer = torch.optim.SGD(model_3.parameters(), lr=0.1)
+optimizer = torch.optim.Adam(model_3.parameters(), lr=0.1)
 
 
 torch.manual_seed(42)
@@ -282,3 +288,24 @@ for epoch in range(epochs):
         print(
             f"Epoch: {epoch} | Loss: {loss:.4f}, Acc: {acc:.2f} | Test Loss: {test_loss:.4f}"
         )
+
+
+model_3.eval()
+with torch.inference_mode():
+    y_pred = torch.round(torch.sigmoid(model_3(X_test))).squeeze()
+
+
+## Decision boundry
+
+
+plt.figure(figsize=(12, 6))
+
+plt.subplot(1, 2, 1)
+plt.title("Train")
+plot_decision_boundary(model_3, X_train, y_train)
+
+plt.subplot(1, 2, 2)
+plt.title("Test")
+plot_decision_boundary(model_3, X_test, y_test)
+plt.savefig("./PyTorch_Neural_Network_Classification/images/test_decision_boundary.png")
+plt.show()
