@@ -19,12 +19,6 @@ X_blob, y_blob = make_blobs(
     random_state=RANDOM_SEED,
 )
 
-# ❌ MISTAKE 1 (old code):
-# You converted labels to float32
-# y_blob = torch.float32 ❌
-# CrossEntropyLoss REQUIRES class indices as LONG
-
-# ✅ FIX:
 X_blob = torch.from_numpy(X_blob).float()
 y_blob = torch.from_numpy(y_blob).long()
 
@@ -45,10 +39,6 @@ plt.show()
 # -------------------------------
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-# ❌ MISTAKE 2 (old code):
-# Model was on GPU but data was on CPU
-
-# ✅ FIX:
 X_blob_train = X_blob_train.to(device)
 y_blob_train = y_blob_train.to(device)
 X_blob_test = X_blob_test.to(device)
@@ -87,14 +77,6 @@ model = BlobModel().to(device)
 # LOSS & OPTIMIZER
 # -------------------------------
 
-# ❌ MISTAKE 3 (old code):
-# You used L1Loss ❌ (regression loss)
-
-# ❌ MISTAKE 4:
-# You used sigmoid + round ❌ (binary classification only)
-
-# ❌ MISTAKE 5:
-# You passed (y_true, y_pred) to loss ❌
 
 # ✅ FIX:
 loss_fn = nn.CrossEntropyLoss()
@@ -108,13 +90,10 @@ epochs = 200
 for epoch in range(epochs):
     model.train()
 
-    # Forward pass (logits, NOT probabilities)
     logits = model(X_blob_train)
 
-    # Correct loss usage: (logits, true_labels)
     loss = loss_fn(logits, y_blob_train)
 
-    # Prediction for accuracy (argmax for multi-class)
     preds = torch.argmax(logits, dim=1)
     acc = accuracy_fn(y_blob_train, preds)
 
