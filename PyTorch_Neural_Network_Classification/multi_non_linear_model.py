@@ -28,3 +28,4 @@ X_blob_train, y_blob_train, X_blob_test, y_blob_test = train_test_split(
 plt.figure(figsize=(10, 7))
 plt.scatter(X_blob[:, 0], X_blob[:, 1], c=y_blob, cmap=plt.cm.RdYlBu)
 plt.show()
+## Making a multi model
