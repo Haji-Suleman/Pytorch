@@ -4,10 +4,12 @@ from sklearn.datasets import make_blobs
 from sklearn.model_selection import train_test_split
 from torch import nn
 
+# -------------------------------
+# DATASET
+# -------------------------------
 NUM_CLASSES = 4
 NUM_FEATURES = 2
 RANDOM_SEED = 42
-
 
 X_blob, y_blob = make_blobs(
     n_samples=1000,
@@ -17,69 +19,148 @@ X_blob, y_blob = make_blobs(
     random_state=RANDOM_SEED,
 )
 
+# ❌ MISTAKE 1 (old code):
+# You converted labels to float32
+# y_blob = torch.float32 ❌
+# CrossEntropyLoss REQUIRES class indices as LONG
 
-X_blob = torch.from_numpy(X_blob).type(dtype=torch.float32)
-y_blob = torch.from_numpy(y_blob).type(dtype=torch.float32)
-
+# ✅ FIX:
+X_blob = torch.from_numpy(X_blob).float()
+y_blob = torch.from_numpy(y_blob).long()
 
 X_blob_train, X_blob_test, y_blob_train, y_blob_test = train_test_split(
     X_blob, y_blob, test_size=0.2, random_state=RANDOM_SEED
 )
 
-plt.figure(figsize=(10, 7))
+# -------------------------------
+# VISUALIZE DATA
+# -------------------------------
+plt.figure(figsize=(8, 6))
 plt.scatter(X_blob[:, 0], X_blob[:, 1], c=y_blob, cmap=plt.cm.RdYlBu)
-# plt.show()
-## Making a multi model
+plt.title("Blob Dataset")
+plt.show()
 
-device = "cuda" if (torch.cuda.is_available()) else "cpu"
+# -------------------------------
+# DEVICE
+# -------------------------------
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+# ❌ MISTAKE 2 (old code):
+# Model was on GPU but data was on CPU
+
+# ✅ FIX:
+X_blob_train = X_blob_train.to(device)
+y_blob_train = y_blob_train.to(device)
+X_blob_test = X_blob_test.to(device)
+y_blob_test = y_blob_test.to(device)
 
 
+# -------------------------------
+# ACCURACY FUNCTION
+# -------------------------------
 def accuracy_fn(y_true, y_pred):
     correct = torch.eq(y_true, y_pred).sum().item()
-    acc = (correct / len(y_pred)) * 100
-    return acc
+    return (correct / len(y_pred)) * 100
 
 
+# -------------------------------
+# MODEL
+# -------------------------------
 class BlobModel(nn.Module):
-    def __init__(self, input_features, output_features, hidden_units=8):
+    def __init__(self):
         super().__init__()
-        self.linear_layer_stack = nn.Sequential(
-            nn.Linear(in_features=input_features, out_features=hidden_units),
+        self.net = nn.Sequential(
+            nn.Linear(2, 32),
             nn.ReLU(),
-            nn.Linear(in_features=hidden_units, out_features=hidden_units),
+            nn.Linear(32, 32),
             nn.ReLU(),
-            nn.Linear(in_features=hidden_units, out_features=output_features),
+            nn.Linear(32, 4),
         )
 
-    def forward(self, X):
-        return self.linear_layer_stack(X)
+    def forward(self, x):
+        return self.net(x)
 
 
-model_4 = BlobModel(input_features=2, output_features=4, hidden_units=8).to(device)
+model = BlobModel().to(device)
 
+# -------------------------------
+# LOSS & OPTIMIZER
+# -------------------------------
 
-loss_fn = nn.L1Loss()
-optimizer = torch.optim.SGD(params=model_4.parameters(), lr=0.1)
+# ❌ MISTAKE 3 (old code):
+# You used L1Loss ❌ (regression loss)
 
+# ❌ MISTAKE 4:
+# You used sigmoid + round ❌ (binary classification only)
 
-epochs = 100
+# ❌ MISTAKE 5:
+# You passed (y_true, y_pred) to loss ❌
+
+# ✅ FIX:
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+# -------------------------------
+# TRAINING LOOP
+# -------------------------------
+epochs = 200
 
 for epoch in range(epochs):
-    model_4.train()
-    y_logits = model_4(X_blob_train).squeeze()
-    y_pred = torch.round(torch.sigmoid(y_logits))
-    print(y_blob_train[0], X_blob_train[0])
-    loss = loss_fn(y_blob_train, y_pred)
-    acc = accuracy_fn(y_true=y_blob_train, y_pred=y_pred)
+    model.train()
+
+    # Forward pass (logits, NOT probabilities)
+    logits = model(X_blob_train)
+
+    # Correct loss usage: (logits, true_labels)
+    loss = loss_fn(logits, y_blob_train)
+
+    # Prediction for accuracy (argmax for multi-class)
+    preds = torch.argmax(logits, dim=1)
+    acc = accuracy_fn(y_blob_train, preds)
+
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
+
+    if epoch % 20 == 0:
+        print(f"Epoch {epoch} | Loss {loss:.3f} | Acc {acc:.2f}%")
+
+# -------------------------------
+# TESTING
+# -------------------------------
+model.eval()
+with torch.inference_mode():
+    test_logits = model(X_blob_test)
+    test_preds = torch.argmax(test_logits, dim=1)
+    test_acc = accuracy_fn(y_blob_test, test_preds)
+
+print(f"\nTest Accuracy: {test_acc:.2f}%")
+
+
+# -------------------------------
+# DECISION BOUNDARY
+# -------------------------------
+def plot_decision_boundary(model, X, y):
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+
+    xx, yy = torch.meshgrid(
+        torch.linspace(x_min, x_max, 200),
+        torch.linspace(y_min, y_max, 200),
+        indexing="ij",
+    )
+
+    grid = torch.cat((xx.reshape(-1, 1), yy.reshape(-1, 1)), dim=1).to(device)
+
+    model.eval()
     with torch.inference_mode():
-        test_logits = model_4(X_blob_train).squeeze()
-        test_pred = torch.round(torch.sigmoid(test_logits))
-        test_loss = loss_fn(test_logits, y_blob_train)
-        test_acc = accuracy_fn(y_true=y_blob_train, y_pred=test_pred)
-    if epoch % 100 == 0:
-        print(
-            f"Epoch: {epoch} | Loss: {loss:.5f}, Acc: {acc:.2f} | Test loss: {test_loss:2f}"
-        )
+        preds = torch.argmax(model(grid), dim=1)
+
+    plt.figure(figsize=(8, 6))
+    plt.contourf(xx.cpu(), yy.cpu(), preds.reshape(xx.shape).cpu(), alpha=0.4)
+    plt.scatter(X[:, 0].cpu(), X[:, 1].cpu(), c=y.cpu(), s=20)
+    plt.title("Decision Boundary")
+    plt.show()
+
+
+plot_decision_boundary(model, X_blob_train, y_blob_train)
