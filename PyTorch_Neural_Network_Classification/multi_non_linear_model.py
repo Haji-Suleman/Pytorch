@@ -78,7 +78,6 @@ model_4 = BlobModel().to(device)
 # -------------------------------
 
 
-# ✅ FIX:
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model_4.parameters(), lr=0.01)
 
@@ -89,21 +88,14 @@ epochs = 200
 
 for epoch in range(epochs):
     model_4.train()
-
-    logits = model_4(X_blob_train)
-
-    loss = loss_fn(logits, y_blob_train)
-
-    preds = torch.argmax(logits, dim=1)
-    acc = accuracy_fn(y_blob_train, preds)
-
+    y_logits = model_4(X_blob_train)
+    loss = loss_fn(y_logits, y_blob_train)
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
 
     if epoch % 20 == 0:
-        print(f"Epoch {epoch} | Loss {loss:.3f} | Acc {acc:.2f}%")
-
+        print(loss)
 # -------------------------------
 # TESTING
 # -------------------------------
