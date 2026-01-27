@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import torch
 from torch import nn
 from sklearn.model_selection import train_test_split
+import numpy  as np
+
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 NUM_FEATURE = 1000
@@ -17,7 +19,7 @@ X_moon_train, X_moon_test, y_moon_train, y_moon_test = train_test_split(X, y)
 
 
 plt.scatter(X[:, 0], X[:, 1], c=y)
-plt.show()
+# plt.show()
 
 
 class MoonModel(nn.Module):
@@ -50,5 +52,10 @@ for epoch in range(epochs):
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-    if epoch % 20 == 0:
-        print(loss)
+    
+model_5.eval()
+with torch.inference_mode():
+    test_logits = model_5(X_moon_test)
+    test_preds = torch.argmax(test_logits)
+    test_acc = 
+    
