@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import torch
 from torch import nn
 from sklearn.model_selection import train_test_split
-import numpy  as np
+import numpy as np
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -22,6 +22,11 @@ plt.scatter(X[:, 0], X[:, 1], c=y)
 # plt.show()
 
 
+def accuracy_fn(y_true, y_preds) -> torch.tensor:
+    correct = torch.eq(y_true, y_preds).sum().item()
+    return correct / len(y_true) * 100
+
+
 class MoonModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -33,7 +38,7 @@ class MoonModel(nn.Module):
         self.layer_3 = nn.Linear(in_features=10, out_features=1)
 
     def forward(self, X: torch.tensor) -> torch.tensor:
-        return self.layer_3(self.layer_2(self.layer_1(X)))
+        return self.layer_3(self.ReLU(self.layer_2(self.ReLU(self.layer_1(X)))))
 
 
 torch.manual_seed(RANDOM_SEED)
@@ -48,14 +53,18 @@ epochs = 200
 for epoch in range(epochs):
     model_5.train()
     y_logits = model_5(X_moon_train).squeeze()
+    y_preds = torch.round(torch.sigmoid(y_logits))
     loss = loss_fn(y_logits, y_moon_train)
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-    
+
 model_5.eval()
 with torch.inference_mode():
     test_logits = model_5(X_moon_test)
     test_preds = torch.argmax(test_logits)
-    test_acc = 
-    
+    test_acc = accuracy_fn(y_true=y_moon_test, y_preds=test_logits)
+plt.scatter(y_moon_test, test_logits, c=y_preds)
+
+plt.show()
+print(f"Test Accuracy {test_acc:.2f}")
