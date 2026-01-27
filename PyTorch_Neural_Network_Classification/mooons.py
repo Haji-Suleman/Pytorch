@@ -10,8 +10,8 @@ NUM_FEATURE = 1000
 RANDOM_SEED = 42
 X, y = make_moons(n_samples=NUM_FEATURE, noise=0.3, random_state=RANDOM_SEED)
 
-X = torch.from_numpy(X).type(dtype=torch.float32)
-y = torch.from_numpy(X).type(dtype=torch.float32)
+# X = torch.from_numpy(X).type(dtype=torch.float32)
+# y = torch.from_numpy(X).type(dtype=torch.float32)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y)
 
@@ -20,9 +20,9 @@ plt.scatter(X[:, 0], X[:, 1], c=y)
 plt.show()
 
 
-class MoonModel(nn.Mode):
+class MoonModel(nn.Module):
     def __init__(self):
-        super.__init__()
+        super().__init__()
         self.layer_1 = (nn.Linear(in_features=2, out_features=10),)
         self.layer_2 = (nn.Linear(in_features=10, out_features=10),)
         self.layer_3 = nn.Linear(in_features=10, out_features=1)
@@ -32,4 +32,9 @@ class MoonModel(nn.Mode):
 
 
 torch.manual_seed(RANDOM_SEED)
+model_5 = MoonModel()
+
+loss_fn = nn.BCEWithLogitsLoss()
+
+optimizer = torch.optim.Adam(params=model_5.parameters(), lr=0.1)
 
