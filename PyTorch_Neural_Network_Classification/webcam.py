@@ -72,7 +72,7 @@ while True:
             2,
         )
 
-        # Cyber glow
+        # Cyber glow and flow
         glow = frame.copy()
         cv2.rectangle(glow, (x - 5, y - 5), (x + w + 5, y + h + 5), (255, 0, 255), 4)
         frame = cv2.addWeighted(glow, 0.3, frame, 0.7, 0)
