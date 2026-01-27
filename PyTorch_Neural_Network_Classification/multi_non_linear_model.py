@@ -71,7 +71,7 @@ class BlobModel(nn.Module):
         return self.net(x)
 
 
-model = BlobModel().to(device)
+model_4 = BlobModel().to(device)
 
 # -------------------------------
 # LOSS & OPTIMIZER
@@ -80,7 +80,7 @@ model = BlobModel().to(device)
 
 # ✅ FIX:
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(model_4.parameters(), lr=0.01)
 
 # -------------------------------
 # TRAINING LOOP
@@ -88,9 +88,9 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 epochs = 200
 
 for epoch in range(epochs):
-    model.train()
+    model_4.train()
 
-    logits = model(X_blob_train)
+    logits = model_4(X_blob_train)
 
     loss = loss_fn(logits, y_blob_train)
 
@@ -107,9 +107,9 @@ for epoch in range(epochs):
 # -------------------------------
 # TESTING
 # -------------------------------
-model.eval()
+model_4.eval()
 with torch.inference_mode():
-    test_logits = model(X_blob_test)
+    test_logits = model_4(X_blob_test)
     test_preds = torch.argmax(test_logits, dim=1)
     test_acc = accuracy_fn(y_blob_test, test_preds)
 
@@ -119,7 +119,7 @@ print(f"\nTest Accuracy: {test_acc:.2f}%")
 # -------------------------------
 # DECISION BOUNDARY
 # -------------------------------
-def plot_decision_boundary(model, X, y):
+def plot_decision_boundary(model_4, X, y):
     x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
     y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
 
@@ -131,9 +131,9 @@ def plot_decision_boundary(model, X, y):
 
     grid = torch.cat((xx.reshape(-1, 1), yy.reshape(-1, 1)), dim=1).to(device)
 
-    model.eval()
+    model_4.eval()
     with torch.inference_mode():
-        preds = torch.argmax(model(grid), dim=1)
+        preds = torch.argmax(model_4(grid), dim=1)
 
     plt.figure(figsize=(8, 6))
     plt.contourf(xx.cpu(), yy.cpu(), preds.reshape(xx.shape).cpu(), alpha=0.4)
@@ -142,4 +142,4 @@ def plot_decision_boundary(model, X, y):
     plt.show()
 
 
-plot_decision_boundary(model, X_blob_train, y_blob_train)
+plot_decision_boundary(model_4, X_blob_train, y_blob_train)
