@@ -192,3 +192,18 @@ def train_snake(episodes=500, render_every=50):
 # ------------------- RUN -------------------
 if __name__ == "__main__":
     trained_model = train_snake(episodes=300)
+    # After training:
+env = SnakeGame(render=True)
+state = env.reset()
+state = torch.tensor(state, dtype=torch.float32).to(
+    "cuda" if torch.cuda.is_available() else "cpu"
+)
+done = False
+
+while not done:
+    with torch.no_grad():
+        q_values = trained_model(state)
+        action = torch.argmax(q_values).item()
+    next_state, reward, done = env.step(action)
+    state = torch.tensor(next_state, dtype=torch.float32)
+    env.render()
