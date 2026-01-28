@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+
 # ------------------- GAME ENVIRONMENT -------------------
 class SnakeGame:
     def __init__(self, w=200, h=200, cell=20, render=False):
@@ -19,7 +20,7 @@ class SnakeGame:
         self.reset()
 
     def reset(self):
-        self.snake = [(self.w//2, self.h//2)]
+        self.snake = [(self.w // 2, self.h // 2)]
         self.dx, self.dy = self.cell, 0
         self.place_food()
         self.done = False
@@ -27,23 +28,37 @@ class SnakeGame:
         return self.get_state()
 
     def place_food(self):
-        self.food = (random.randrange(0, self.w, self.cell),
-                     random.randrange(0, self.h, self.cell))
+        self.food = (
+            random.randrange(0, self.w, self.cell),
+            random.randrange(0, self.h, self.cell),
+        )
         while self.food in self.snake:
-            self.food = (random.randrange(0, self.w, self.cell),
-                         random.randrange(0, self.h, self.cell))
+            self.food = (
+                random.randrange(0, self.w, self.cell),
+                random.randrange(0, self.h, self.cell),
+            )
 
     def step(self, action):
         # Action: 0=UP,1=DOWN,2=LEFT,3=RIGHT
-        if action == 0 and self.dy == 0: self.dx, self.dy = 0, -self.cell
-        if action == 1 and self.dy == 0: self.dx, self.dy = 0, self.cell
-        if action == 2 and self.dx == 0: self.dx, self.dy = -self.cell, 0
-        if action == 3 and self.dx == 0: self.dx, self.dy = self.cell, 0
+        if action == 0 and self.dy == 0:
+            self.dx, self.dy = 0, -self.cell
+        if action == 1 and self.dy == 0:
+            self.dx, self.dy = 0, self.cell
+        if action == 2 and self.dx == 0:
+            self.dx, self.dy = -self.cell, 0
+        if action == 3 and self.dx == 0:
+            self.dx, self.dy = self.cell, 0
 
-        head = (self.snake[0][0]+self.dx, self.snake[0][1]+self.dy)
+        head = (self.snake[0][0] + self.dx, self.snake[0][1] + self.dy)
 
         # Check collision
-        if (head[0]<0 or head[0]>=self.w or head[1]<0 or head[1]>=self.h or head in self.snake):
+        if (
+            head[0] < 0
+            or head[0] >= self.w
+            or head[1] < 0
+            or head[1] >= self.h
+            or head in self.snake
+        ):
             self.done = True
             reward = -1
             return self.get_state(), reward, self.done
@@ -69,13 +84,15 @@ class SnakeGame:
         return state
 
     def render(self):
-        if not self.render_game: return
-        self.screen.fill((0,0,0))
+        if not self.render_game:
+            return
+        self.screen.fill((0, 0, 0))
         for s in self.snake:
-            pygame.draw.rect(self.screen,(0,255,0),(*s,self.cell,self.cell))
-        pygame.draw.rect(self.screen,(255,0,0),(*self.food,self.cell,self.cell))
+            pygame.draw.rect(self.screen, (0, 255, 0), (*s, self.cell, self.cell))
+        pygame.draw.rect(self.screen, (255, 0, 0), (*self.food, self.cell, self.cell))
         pygame.display.flip()
         self.clock.tick(10)
+
 
 # ------------------- DQN AGENT -------------------
 class DQN(nn.Module):
@@ -84,10 +101,12 @@ class DQN(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.ReLU(),
-            nn.Linear(hidden_size, output_size)
+            nn.Linear(hidden_size, output_size),
         )
-    def forward(self,x):
+
+    def forward(self, x):
         return self.fc(x)
+
 
 # ------------------- TRAINING -------------------
 def train_snake(episodes=500, render_every=50):
@@ -128,10 +147,48 @@ def train_snake(episodes=500, render_every=50):
             memory.append((state, action, reward, next_state_tensor, done))
             state = next_state_tensor
             total_reward += reward
-            steps +=1
+            steps += 1
 
-            if done: break
+            if done:
+                break
 
             # Train from memory
             if len(memory) >= batch_size:
-                minibatch = random.sample(memory, bat
+                minibatch = random.sample(memory, batch_size)
+                states_mb = torch.stack([s[0] for s in minibatch])
+                actions_mb = torch.tensor([s[1] for s in minibatch]).to(device)
+                rewards_mb = torch.tensor(
+                    [s[2] for s in minibatch], dtype=torch.float32
+                ).to(device)
+                next_states_mb = torch.stack([s[3] for s in minibatch])
+                dones_mb = torch.tensor(
+                    [s[4] for s in minibatch], dtype=torch.float32
+                ).to(device)
+
+                q_values = model(states_mb)
+                q_values = q_values.gather(1, actions_mb.unsqueeze(1)).squeeze(1)
+                with torch.no_grad():
+                    q_next = model(next_states_mb).max(1)[0]
+                    q_target = rewards_mb + gamma * q_next * (1 - dones_mb)
+                loss = criterion(q_values, q_target)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+        epsilon = max(epsilon_min, epsilon * epsilon_decay)
+
+        if ep % 10 == 0:
+            print(
+                f"Episode {ep} - Reward: {total_reward} - Steps: {steps} - Epsilon: {epsilon:.2f}"
+            )
+
+        if ep % render_every == 0:
+            env.render()
+
+    print("Training finished.")
+    return model
+
+
+# ------------------- RUN -------------------
+if __name__ == "__main__":
+    trained_model = train_snake(episodes=300)
