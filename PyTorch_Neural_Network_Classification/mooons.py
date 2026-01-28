@@ -9,7 +9,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 NUM_SAMPLES = 1000
 RANDOM_SEED = 42
 
-X, y = make_moons(n_samples=NUM_SAMPLES, random_state=RANDOM_SEED, noise=0.3)
+X, y = make_moons(n_samples=NUM_SAMPLES, random_state=RANDOM_SEED, noise=0.05)
 
 X = torch.tensor(X, dtype=torch.float32)
 y = torch.tensor(y, dtype=torch.float32)
