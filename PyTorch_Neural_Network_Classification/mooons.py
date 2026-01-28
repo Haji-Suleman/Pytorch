@@ -11,7 +11,7 @@ NUM_SAMPLES = 1000
 RANDOM_SEED = 42
 
 # Dataset
-X, y = make_moons(n_samples=NUM_SAMPLES, random_state=RANDOM_SEED)
+X, y = make_moons(n_samples=NUM_SAMPLES, random_state=RANDOM_SEED, noise=0.3)
 
 # Convert to tensors
 X = torch.tensor(X, dtype=torch.float32)
