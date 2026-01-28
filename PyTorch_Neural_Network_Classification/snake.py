@@ -16,6 +16,7 @@ class SnakeGame:
         if render:
             pygame.init()
             self.screen = pygame.display.set_mode((w, h))
+            pygame.display.set_caption("Snake RL")
             self.clock = pygame.time.Clock()
         self.reset()
 
@@ -51,7 +52,7 @@ class SnakeGame:
 
         head = (self.snake[0][0] + self.dx, self.snake[0][1] + self.dy)
 
-        # Check collision
+        # Collision check
         if (
             head[0] < 0
             or head[0] >= self.w
@@ -79,9 +80,7 @@ class SnakeGame:
         head = self.snake[0]
         food_x, food_y = self.food
         dx, dy = self.dx, self.dy
-        # State: head x/y, food x/y, direction x/y
-        state = np.array([head[0], head[1], food_x, food_y, dx, dy], dtype=np.float32)
-        return state
+        return np.array([head[0], head[1], food_x, food_y, dx, dy], dtype=np.float32)
 
     def render(self):
         if not self.render_game:
@@ -109,7 +108,7 @@ class DQN(nn.Module):
 
 
 # ------------------- TRAINING -------------------
-def train_snake(episodes=500, render_every=50):
+def train_snake(episodes=500, render_every=100):
     env = SnakeGame(render=False)
     state_size = 6
     action_size = 4
@@ -128,8 +127,7 @@ def train_snake(episodes=500, render_every=50):
     criterion = nn.MSELoss()
 
     for ep in range(episodes):
-        state = env.reset()
-        state = torch.tensor(state, dtype=torch.float32).to(device)
+        state = torch.tensor(env.reset(), dtype=torch.float32).to(device)
         total_reward = 0
         steps = 0
 
@@ -139,8 +137,7 @@ def train_snake(episodes=500, render_every=50):
                 action = random.randrange(action_size)
             else:
                 with torch.no_grad():
-                    q_values = model(state)
-                    action = torch.argmax(q_values).item()
+                    action = torch.argmax(model(state)).item()
 
             next_state, reward, done = env.step(action)
             next_state_tensor = torch.tensor(next_state, dtype=torch.float32).to(device)
@@ -165,8 +162,9 @@ def train_snake(episodes=500, render_every=50):
                     [s[4] for s in minibatch], dtype=torch.float32
                 ).to(device)
 
-                q_values = model(states_mb)
-                q_values = q_values.gather(1, actions_mb.unsqueeze(1)).squeeze(1)
+                q_values = (
+                    model(states_mb).gather(1, actions_mb.unsqueeze(1)).squeeze(1)
+                )
                 with torch.no_grad():
                     q_next = model(next_states_mb).max(1)[0]
                     q_target = rewards_mb + gamma * q_next * (1 - dones_mb)
@@ -183,27 +181,32 @@ def train_snake(episodes=500, render_every=50):
             )
 
         if ep % render_every == 0:
-            env.render()
+            env.render()  # optional small render to watch progress
 
     print("Training finished.")
     return model
 
 
-# ------------------- RUN -------------------
-if __name__ == "__main__":
-    trained_model = train_snake(episodes=300)
-    # After training:
-env = SnakeGame(render=True)
-state = env.reset()
-state = torch.tensor(state, dtype=torch.float32).to(
-    "cuda" if torch.cuda.is_available() else "cpu"
-)
-done = False
+# ------------------- PLAY FUNCTION -------------------
+def play_snake(model, episodes=5):
+    env = SnakeGame(render=True)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-while not done:
-    with torch.no_grad():
-        q_values = trained_model(state)
-        action = torch.argmax(q_values).item()
-    next_state, reward, done = env.step(action)
-    state = torch.tensor(next_state, dtype=torch.float32)
-    env.render()
+    for ep in range(episodes):
+        state = torch.tensor(env.reset(), dtype=torch.float32).to(device)
+        done = False
+        while not done:
+            pygame.event.pump()  # prevent pygame from freezing
+            with torch.no_grad():
+                action = torch.argmax(model(state)).item()
+            next_state, reward, done = env.step(action)
+            state = torch.tensor(next_state, dtype=torch.float32).to(device)
+            env.render()
+        print(f"Episode {ep+1} finished with score: {env.score}")
+    pygame.quit()
+
+
+# ------------------- MAIN -------------------
+if __name__ == "__main__":
+    trained_model = train_snake(episodes=300)  # train the AI
+    play_snake(trained_model, episodes=3)  # watch AI play
