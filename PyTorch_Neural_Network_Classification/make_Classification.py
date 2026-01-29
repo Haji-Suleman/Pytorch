@@ -27,7 +27,7 @@ X, y = make_classification(
     flip_y=FLIP_Y,
 )
 X = torch.from_numpy(X).type(dtype=torch.float32)
-y = torch.from_numpy(y).type(dtype=torch.float32)
+y = torch.from_numpy(y).type(dtype=torch.LongTensor)
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=RANDOM_SEED
@@ -40,26 +40,29 @@ def accuracy_fn(y_true, y_pred):
 
 
 class Classifcation_model(nn.Module):
-    def __init__(self, n_features, hidden1, hidden2, output_size):
+    def __init__(self, n_features, hidden1, hidden2, hidden3, output_size):
         super().__init__()
-        model = nn.Sequential(
-            nn.Linear(in_features=n_features, out_features=hidden1),
-            nn.ReLU(),
-            nn.Linear(in_features=hidden1, out_features=hidden2),
-            nn.ReLU(),
-            nn.Linear(in_features=hidden2, out_features=output_size),
-        )
+        self.Layer_1 = nn.Linear(in_features=n_features, out_features=hidden1)
+        self.Layer_2 = nn.Linear(in_features=hidden1, out_features=hidden2)
+        self.Layer_3 = nn.Linear(in_features=hidden2, out_features=hidden3)
+        self.Layer_4 = nn.Linear(in_features=hidden3, out_features=output_size)
+        self.ReLU = nn.ReLU()
 
     def forward(self, X):
-        return self.model(X)
+        return self.Layer_3(self.ReLU)
 
 
 torch.manual_seed(RANDOM_SEED)
 HIDDEN1 = 128
 HIDDEN2 = 64
+HIDDEN3 = 32
 OUTPUT_SIZE = 5
 model_6 = Classifcation_model(
-    n_features=N_FEATURE, hidden1=HIDDEN1, hidden2=HIDDEN2, output_size=OUTPUT_SIZE
+    n_features=N_FEATURE,
+    hidden1=HIDDEN1,
+    hidden2=HIDDEN2,
+    hidden3=HIDDEN3,
+    output_size=OUTPUT_SIZE,
 )
 
 loss_fn = nn.CrossEntropyLoss()
@@ -79,7 +82,4 @@ model_6.eval()
 with torch.inference_mode():
     test_preds = model_6(X_test)
     test_loss = loss_fn(test_preds, y_test)
-    if epoch % 20 == 0:
-        print(
-            f"Epoch: {epoch} | CrossEntropy Train Loss: {loss} | CrossEntropy Test Loss: {test_loss}"
-        )
+    print(f"CrossEntropy Train Loss: {loss} | CrossEntropy Test Loss: {test_loss}")
