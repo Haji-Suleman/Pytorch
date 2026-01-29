@@ -4,6 +4,9 @@ from torch import nn
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
 RANDOM_SEED = 42
 N_SAMPLES = 2000
@@ -38,7 +41,7 @@ def accuracy_fn(y_true, y_pred):
 
 class Classifcation_model(nn.Module):
     def __init__(self, n_features):
-        super().__init__(n_features)
+        super().__init__()
         model = nn.Sequential(
             nn.Linear(in_features=n_features, out_features=128),
             nn.ReLU(),
