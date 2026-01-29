@@ -69,3 +69,11 @@ for epoch in range(epochs):
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
+model_6.eval()
+with torch.inference_mode():
+    test_preds = model_6(X_test)
+    test_loss = loss_fn(test_preds, y_test)
+    if epoch % 20 == 0:
+        print(
+            f"Epoch: {epoch} | CrossEntropy Train Loss: {loss} | CrossEntropy Test Loss: {test_loss}"
+        )
