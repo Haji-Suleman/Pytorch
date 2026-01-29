@@ -40,16 +40,14 @@ def accuracy_fn(y_true, y_pred):
 
 
 class Classifcation_model(nn.Module):
-    def __init__(self, n_features):
+    def __init__(self, n_features, hidden1, hidden2, output_size):
         super().__init__()
         model = nn.Sequential(
-            nn.Linear(in_features=n_features, out_features=128),
+            nn.Linear(in_features=n_features, out_features=hidden1),
             nn.ReLU(),
-            nn.LeakyReLU(),
-            nn.Linear(in_features=128, out_features=128),
+            nn.Linear(in_features=hidden1, out_features=hidden2),
             nn.ReLU(),
-            nn.LeakyReLU(),
-            nn.Linear(in_features=128, out_features=4),
+            nn.Linear(in_features=hidden2, out_features=output_size),
         )
 
     def forward(self, X):
@@ -57,7 +55,12 @@ class Classifcation_model(nn.Module):
 
 
 torch.manual_seed(RANDOM_SEED)
-model_6 = Classifcation_model(n_features=N_FEATURE)
+HIDDEN1 = 128
+HIDDEN2 = 64
+OUTPUT_SIZE = 5
+model_6 = Classifcation_model(
+    n_features=N_FEATURE, hidden1=HIDDEN1, hidden2=HIDDEN2, output_size=OUTPUT_SIZE
+)
 
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(params=model_6.parameters(), lr=0.05)
