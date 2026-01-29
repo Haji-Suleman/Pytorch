@@ -100,7 +100,7 @@ model = ClassificationModel(
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-4)
 
-EPOCHS = 300
+EPOCHS = 500
 train_losses = []
 
 for epoch in range(EPOCHS):
