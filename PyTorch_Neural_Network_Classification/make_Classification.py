@@ -49,7 +49,9 @@ class Classifcation_model(nn.Module):
         self.ReLU = nn.ReLU()
 
     def forward(self, X):
-        return self.Layer_3(self.ReLU)
+        return self.Layer_4(
+            self.ReLU(self.Layer_3(self.ReLU(self.Layer_2(self.ReLU(self.Layer_1(X))))))
+        )
 
 
 torch.manual_seed(RANDOM_SEED)
@@ -82,4 +84,6 @@ model_6.eval()
 with torch.inference_mode():
     test_preds = model_6(X_test)
     test_loss = loss_fn(test_preds, y_test)
-    print(f"CrossEntropy Train Loss: {loss} | CrossEntropy Test Loss: {test_loss}")
+    print(y_test.size, test_preds.size)
+    test_acc = accuracy_fn(y_true=y_test, y_pred=test_preds)
+    print(f"Accuracy of CrossEntropy {test_acc}")
