@@ -23,6 +23,12 @@ X, y = make_classification(
     class_sep=CLASS_SEP,
     flip_y=FLIP_Y,
 )
+X = torch.from_numpy(X).type(dtype=torch.float32)
+y = torch.from_numpy(y).type(dtype=torch.float32)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=RANDOM_SEED
+)
 
 
 class Classifcation_model(nn.Module):
