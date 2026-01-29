@@ -88,7 +88,7 @@ HIDDEN2 = 128
 HIDDEN3 = 64
 OUTPUT_SIZE = N_CLASSES
 
-model = ClassificationModel(
+model_6 = ClassificationModel(
     input_size=N_FEATURES,
     hidden1=HIDDEN1,
     hidden2=HIDDEN2,
@@ -98,15 +98,15 @@ model = ClassificationModel(
 )
 
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=1e-4)
+optimizer = torch.optim.Adam(model_6.parameters(), lr=0.01, weight_decay=1e-4)
 
 EPOCHS = 500
 train_losses = []
 
 for epoch in range(EPOCHS):
-    model.train()
+    model_6.train()
     optimizer.zero_grad()
-    logits = model(X_train)
+    logits = model_6(X_train)
     loss = loss_fn(logits, y_train)
     loss.backward()
     optimizer.step()
@@ -115,9 +115,9 @@ for epoch in range(EPOCHS):
     if epoch % 20 == 0:
         print(f"Epoch {epoch} | Train Loss: {loss.item():.4f}")
 
-model.eval()
+model_6.eval()
 with torch.inference_mode():
-    test_logits = model(X_test)
+    test_logits = model_6(X_test)
     test_preds = torch.argmax(test_logits, dim=1)
     test_acc = accuracy_fn(y_test, test_preds)
     print(f"\nTest Accuracy: {test_acc:.2f}%")
