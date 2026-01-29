@@ -85,6 +85,6 @@ with torch.inference_mode():
     test_preds = model_6(X_test)
     test_pred_probs = torch.argmax(test_preds, dim=1)
     test_loss = loss_fn(test_preds, y_test)
-    print(y_test.size(), test_preds.size())
-    test_acc = accuracy_fn(y_true=y_test, y_pred=test_preds)
+    print(y_test[:5], test_pred_probs[:5])
+    test_acc = accuracy_fn(y_true=y_test, y_pred=test_pred_probs)
     print(f"Accuracy of CrossEntropy {test_acc}")
