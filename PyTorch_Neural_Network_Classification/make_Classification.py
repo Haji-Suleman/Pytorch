@@ -31,6 +31,11 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 
+def accuracy_fn(y_true, y_pred):
+    correct = torch.eq(y_true, y_pred).sum().item()
+    return correct / len(y_true) * 100
+
+
 class Classifcation_model(nn.Module):
     def __init__(self, n_features):
         super().__init__()
@@ -59,4 +64,8 @@ epochs = 200
 
 for epoch in range(epochs):
     model_6.train()
-    y_logits
+    y_logits = model_6(X_train)
+    loss = loss_fn(y_logits, y_train)
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
