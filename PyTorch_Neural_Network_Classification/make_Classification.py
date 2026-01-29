@@ -87,4 +87,4 @@ with torch.inference_mode():
     test_loss = loss_fn(test_preds, y_test)
     print(y_test[:5], test_pred_probs[:5])
     test_acc = accuracy_fn(y_true=y_test, y_pred=test_pred_probs)
-    print(f"Accuracy of CrossEntropy {test_acc}")
+    print(f"Accuracy of CrossEntropy: {test_acc}")
