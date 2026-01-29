@@ -38,7 +38,7 @@ def accuracy_fn(y_true, y_pred):
 
 class Classifcation_model(nn.Module):
     def __init__(self, n_features):
-        super().__init__()
+        super().__init__(n_features)
         model = nn.Sequential(
             nn.Linear(in_features=n_features, out_features=128),
             nn.ReLU(),
