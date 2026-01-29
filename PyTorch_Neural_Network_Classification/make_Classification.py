@@ -23,8 +23,6 @@ X, y = make_classification(
     n_informative=N_INFROMATIVE,
     n_redundant=N_REDUNDUNT,
     n_classes=N_CLASSES,
-    class_sep=CLASS_SEP,
-    flip_y=FLIP_Y,
 )
 X = torch.from_numpy(X).type(dtype=torch.float32)
 y = torch.from_numpy(y).type(dtype=torch.LongTensor)
