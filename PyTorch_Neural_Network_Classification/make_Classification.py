@@ -129,5 +129,5 @@ with torch.inference_mode():
         idx = y_test == cls
         cls_acc = accuracy_fn(y_test[idx], test_preds[idx])
         print(f"Class {cls} Accuracy: {cls_acc:.2f}%")
-torchmetrics_accuracy = torchmetrics.Accuracy()
+torchmetrics_accuracy = Accuracy()
 torchmetrics_accuracy(y_preds, y_test)
