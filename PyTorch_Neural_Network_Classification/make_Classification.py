@@ -10,6 +10,8 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+import torchmetrics
+from torchmetrics import Accuracy
 
 RANDOM_SEED = 42
 torch.manual_seed(RANDOM_SEED)
@@ -100,13 +102,14 @@ model_6 = ClassificationModel(
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model_6.parameters(), lr=0.01, weight_decay=1e-4)
 
-EPOCHS = 500
+EPOCHS = 200
 train_losses = []
 
 for epoch in range(EPOCHS):
     model_6.train()
     optimizer.zero_grad()
     logits = model_6(X_train)
+    y_preds = torch.argmax(logits, dim=1)
     loss = loss_fn(logits, y_train)
     loss.backward()
     optimizer.step()
@@ -126,3 +129,5 @@ with torch.inference_mode():
         idx = y_test == cls
         cls_acc = accuracy_fn(y_test[idx], test_preds[idx])
         print(f"Class {cls} Accuracy: {cls_acc:.2f}%")
+torchmetrics_accuracy = torchmetrics.Accuracy()
+torchmetrics_accuracy(y_preds, y_test)
