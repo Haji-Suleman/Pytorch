@@ -38,7 +38,7 @@ torch.manual_seed(42)
 model = LinearRegressionModel()
 
 loss_fn = nn.MSELoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
 
 def accuracy_fn(y_true, y_pred):
@@ -66,3 +66,4 @@ for epoch in range(epochs):
         )
 print(f"Accuracy of Function: {accuracy_fn(y_test,test_pred)}")
 plot_data(y_preds=test_pred)
+plt.show()
