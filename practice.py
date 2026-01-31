@@ -40,6 +40,12 @@ model = LinearRegressionModel()
 loss_fn = nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
 
+
+def accuracy_fn(y_true, y_pred):
+    correct = torch.eq(y_true, y_pred).sum().item()
+    return correct / len(y_true) * 100
+
+
 epochs = 400
 for epoch in range(epochs):
     model.train()
@@ -58,5 +64,5 @@ for epoch in range(epochs):
         print(
             f"Epoch {epoch} | Train loss {loss.item():.4f} | Test loss {test_loss.item():.4f}"
         )
-
+print(f"Accuracy of Function: {accuracy_fn(y_test,test_pred)}")
 plot_data(y_preds=test_pred)
